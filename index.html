@@ -1,114 +1,304 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Face Recognition AI</title>
+    <style>
+        body {
+            font-family: helvetica;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 5px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input[type="submit"] {
+            background-color: #ccc;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #505050;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .preview-container {
+            position: relative;
+            display: inline-block;
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        #image {
+            max-width: 100%;
+            display: none;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
 </head>
-
-<style>
-    body {
-        font-family: helvetica;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        background-image: url('background.jpg'); 
-        background-size: cover; 
-        background-repeat: no-repeat;
-    }
-
-    form {
-        background-color: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
-        max-width: 500px;
-        width: 90%;
-    }
-
-    h1 {
-        text-align: center;
-        margin-bottom: 20px;
-    }
-
-    label {
-        display: block;
-        margin-bottom: 5px;
-    }
-
-    input[type="text"],
-    input[type="password"],
-    input[type="file"] {
-        width: 100%;
-        padding: 8px;
-        margin-bottom: 5px;
-        box-sizing: border-box;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-
-    input[type="radio"] {
-        margin-right: 5px;
-    }
-
-    input[type="submit"] {
-        background-color: #ccc;
-        color: #fff;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        width: 100%;
-    }
-
-    input[type="submit"]:hover {
-        background-color: #505050;
-    }
-
-    .keterangan {
-        font-size: 10pt;
-        color: #ccc;
-        margin-bottom: 10px;
-    }
-
-    .jenis_kelamin {
-        display: flex;
-        font-size: 12pt;
-        gap: 8px;
-    }
-
-</style>
-</head>
-
 <body>
-  <form action="input_diterima_bro" method="POST" enctype="multipart/form-data">
-    <h1>Formulir Pendaftaran</h1>
+        <form action="input_diterima_bro" method="POST" enctype="multipart/form-data">
+            <h1>Formulir Pendaftaran</h1>
 
-    <label for="nama">Nama Anda</label>
-    <input type="text" id="nama" name="nama" placeholder="Masukkan Nama Anda" required>
-    <div class="keterangan">Minimal 2 karakter, maks. 60 karakter</div><br>
+            <label for="nama">Nama Anda</label>
+            <input type="text" id="nama" name="nama" placeholder="Masukkan Nama Anda" required><br>
+            <div id="nameWarning" style="color: red; font-size: 12px; margin-top: 2px; display: none;">
+                Hanya huruf dan spasi yang diperbolehkan
+            </div>
+            <br>
 
-    <label for="username">Username Anda</label>
-    <input type="text" id="username" name="username" placeholder="Masukkan Username Anda" required>
-    <div class="keterangan">Minimal 8 karakter, maks. 12 karakter</div><br>
+            <label for="username">Username Anda</label>
+            <input type="text" id="username" name="username" placeholder="Masukkan Username Anda" required><br>
+            <div id="usernameWarning" style="color: red; font-size: 12px; margin-top: 2px; display: none;">
+                Username harus 3-20 karakter, huruf kecil dan angka saja
+            </div>
+            <br>
 
-    <label for="password">Password Anda</label>
-    <input type="password" id="password" name="password" placeholder="Masukkan password Anda" required>
-    <div class="keterangan">Minimal 8 karakter, maks. 255 *Harus memiliki kombinasi huruf dan kata serta pengunaan karakter khusus </div><br>
+            <label for="password">Password Anda</label>
+            <input type="password" id="password" name="password" placeholder="Masukkan password Anda" required><br>
+            <div id="passwordWarning" style="color: red; font-size: 12px; margin-top: 2px; display: none;">
+                Password harus memenuhi:
+                <ul style="margin: 2px 0 0 20px;">
+                    <li id="lengthCheck">✖ Panjang 6-20 karakter</li>
+                    <li id="lowerCheck">✖ Minimal 1 huruf kecil</li>
+                    <li id="upperCheck">✖ Minimal 1 huruf besar</li>
+                    <li id="numberCheck">✖ Minimal 1 angka</li>
+                    <li id="specialCheck">✖ Minimal 1 karakter spesial</li>
+                </ul>
+            </div>
+            <br>
 
-    <label for="jenis_kelamin">Jenis Kelamin</label><br>
-    <div class="jenis_kelamin">
-        <input type="radio" id="laki" name="jenis_kelamin" value="laki-laki" required>
-        <label for="laki">Laki-laki</label>
-        <input type="radio" id="perempuan" name="jenis_kelamin" value="perempuan">
-        <label for="perempuan">Perempuan</label><br>
-    </div><br>
+            <label for="nomor">Nomor WhatsApp</label>
+            <input type="text" id="nomor" name="nomor" placeholder="Contoh: 62123456789" required><br>
+            <div id="nomorWarning" style="color: red; font-size: 12px; margin-top: 2px; display: none;">
+                Format nomor WhatsApp tidak valid
+            </div>
+            <br>
 
-    <label for="foto">Foto:</label>
-    <input type="file" id="foto" name="foto" accept=".png, .jpg, .jpeg, .webp" required>
-    <div class="keterangan">Format file foto harus .png, .jpg, .jpeg .webp *Maks 1mb </div><br>
+            <label for="foto">Foto:</label>
+            <input type="file" id="foto" name="foto" accept="image/jpeg" required>
+            <div class="keterangan">Format file foto harus JPG *Maks 500kb, Min 50kb</div>
+            <div id="message" class="error"></div>
 
-    <input type="submit" value="Submit">
-  </form>
+            <div class="preview-container">
+                <img id="image">
+                <canvas id="canvas"></canvas>
+            </div>
+
+            <input type="submit" value="Submit" disabled>
+        </form>
+
+</body>
+    <script>
+
+        
+        document.getElementById('foto').addEventListener('change', async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const imgElement = document.getElementById('image');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const message = document.getElementById('message');
+            const submitBtn = document.querySelector('input[type="submit"]');
+            
+            message.textContent = "";
+            submitBtn.disabled = true;
+
+            const fileSize = file.size;
+            if (fileSize < 50 * 1024 || fileSize > 500 * 1024) {
+                message.textContent = "⚠️ Ukuran file harus antara 50KB - 500KB";
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imgElement.src = e.target.result;
+                imgElement.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+            
+            imgElement.onload = async function() {
+                canvas.width = imgElement.width;
+                canvas.height = imgElement.height;
+                ctx.drawImage(imgElement, 0, 0);
+                
+                const model = await blazeface.load();
+                const predictions = await model.estimateFaces(imgElement, false);
+                
+                if (predictions.length > 0) {
+                    predictions.forEach(prediction => {
+                        const [x, y, width, height] = prediction.topLeft.concat(prediction.bottomRight);
+                        const confidence = (prediction.probability[0] * 100).toFixed(2);
+                        
+                        ctx.strokeStyle = 'red';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(x, y, width - x, height - y);
+                        ctx.fillStyle = 'red';
+                        ctx.font = '16px Arial';
+                        ctx.fillText(`Confidence: ${confidence}%`, x, y - 5);
+
+                        if (confidence > 80) {
+                            message.style.color = 'green';
+                            message.textContent = "✔️ Wajah terdeteksi dengan baik!";
+                            submitBtn.disabled = false;
+                        } else {
+                            message.style.color = 'red';
+                            message.textContent = "⚠️ Kualitas foto wajah kurang baik, silakan gunakan foto lain";
+                            submitBtn.disabled = true;
+                        }
+                    });
+                } else {
+                    message.textContent = "Muka tidak terdeteksi, silahkan pakai gambar JPG lainnya!";
+                    submitBtn.disabled = true;
+                }
+            };
+        });
+    </script>
 </body>
 </html>
+
+<script>
+    document.getElementById('nama').addEventListener('input', function(e) {
+        const warning = document.getElementById('nameWarning');
+        const hasInvalidChars = /[^a-zA-Z\s]/.test(e.target.value);
+        
+        if (hasInvalidChars) {
+            warning.style.display = 'block';
+            warning.textContent = "Karakter tidak diizinkan! Hanya huruf A-Z dan spasi yang diperbolehkan";
+            this.style.borderColor = 'red';
+        } else {
+            warning.style.display = 'none';
+            this.style.borderColor = '#ccc';
+        }
+        
+        let value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+        value = value.toLowerCase().split(' ').map(word => {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
+        
+        e.target.value = value;
+    });
+
+    document.getElementById('username').addEventListener('input', function(e) {
+        const warning = document.getElementById('usernameWarning');
+        let value = e.target.value.toLowerCase();
+        value = value.replace(/[^a-z0-9]/g, '');
+        
+        if (value.length < 3 || value.length > 20 || e.target.value !== value) {
+            warning.style.display = 'block';
+            warning.textContent = "⚠️ Username harus 3-20 karakter, hanya huruf kecil dan angka!";
+            this.style.borderColor = 'red';
+        } else {
+            warning.style.display = 'none';
+            this.style.borderColor = '#ccc';
+        }
+        
+        e.target.value = value;
+    });
+
+    document.getElementById('password').addEventListener('input', function(e) {
+        const warning = document.getElementById('passwordWarning');
+        const password = e.target.value;
+        
+        const hasValidLength = password.length >= 6 && password.length <= 20;
+        const hasLower = /[a-z]/.test(password);
+        const hasUpper = /[A-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>_+]/.test(password);
+        
+        if (!(hasValidLength && hasLower && hasUpper && hasNumber && hasSpecial)) {
+            warning.style.display = 'block';
+            this.style.borderColor = 'red';
+            let errorMsg = "Password harus memiliki:\n";
+            if (!hasValidLength) errorMsg += "- Panjang 6-20 karakter\n";
+            if (!hasLower) errorMsg += "- Minimal 1 huruf kecil\n";
+            if (!hasUpper) errorMsg += "- Minimal 1 huruf besar\n";
+            if (!hasNumber) errorMsg += "- Minimal 1 angka\n";
+            if (!hasSpecial) errorMsg += "- Minimal 1 karakter spesial\n";
+            warning.textContent = errorMsg;
+        } else {
+            warning.style.display = 'none';
+            this.style.borderColor = '#ccc';
+        }
+    });
+
+    let lastValue = '';
+    document.getElementById('nomor').addEventListener('input', function(e) {
+        const warning = document.getElementById('nomorWarning');
+        let value = e.target.value.replace(/\D/g, '');
+
+        const isDeleting = value.length < lastValue.length;
+        if (!isDeleting) {
+            if (value.length === 1) {
+                value = '62';
+            } else if (value.startsWith('0')) {
+                value = '62' + value.slice(1);
+            } else if (!value.startsWith('62')) {
+                value = '62' + value.slice(2);
+            }
+        }
+        
+        const isValidLength = value.length >= 11 && value.length <= 14;
+        if (!isValidLength && value.length > 0) {
+            warning.style.display = 'block';
+            warning.textContent = "⚠️ Nomor WhatsApp harus 11-14 digit";
+            this.style.borderColor = 'red';
+        } else {
+            warning.style.display = 'none';
+            this.style.borderColor = '#ccc';
+        }
+        
+        lastValue = value;
+        e.target.value = value;
+    });
+</script>
