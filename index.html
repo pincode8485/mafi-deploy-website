@@ -156,7 +156,7 @@
 
             const fileSize = file.size;
             if (fileSize < 50 * 1024 || fileSize > 500 * 1024) {
-                message.textContent = "⚠️ Ukuran file harus antara 50KB - 500KB";
+                message.textContent = "Ukuran file harus antara 50KB - 500KB";
                 return;
             }
 
@@ -172,7 +172,7 @@
                 canvas.height = imgElement.height;
                 ctx.drawImage(imgElement, 0, 0);
                 
-                const model = await blazeface.load();
+                const model = await blazeface.load();f
                 const predictions = await model.estimateFaces(imgElement, false);
                 
                 if (predictions.length > 0) {
@@ -180,20 +180,20 @@
                         const [x, y, width, height] = prediction.topLeft.concat(prediction.bottomRight);
                         const confidence = (prediction.probability[0] * 100).toFixed(2);
                         
-                        ctx.strokeStyle = 'red';
+                        ctx.strokeStyle = 'white';
                         ctx.lineWidth = 3;
                         ctx.strokeRect(x, y, width - x, height - y);
-                        ctx.fillStyle = 'red';
+                        ctx.fillStyle = 'white';
                         ctx.font = '16px Arial';
                         ctx.fillText(`Confidence: ${confidence}%`, x, y - 5);
 
                         if (confidence > 80) {
                             message.style.color = 'green';
-                            message.textContent = "✔️ Wajah terdeteksi dengan baik!";
+                            message.textContent = "Wajah terdeteksi dengan baik!";
                             submitBtn.disabled = false;
                         } else {
                             message.style.color = 'red';
-                            message.textContent = "⚠️ Kualitas foto wajah kurang baik, silakan gunakan foto lain";
+                            message.textContent = "Kualitas foto wajah kurang baik, silakan gunakan foto lain";
                             submitBtn.disabled = true;
                         }
                     });
@@ -236,7 +236,7 @@
         
         if (value.length < 3 || value.length > 20 || e.target.value !== value) {
             warning.style.display = 'block';
-            warning.textContent = "⚠️ Username harus 3-20 karakter, hanya huruf kecil dan angka!";
+            warning.textContent = "Username harus 3-20 karakter, hanya huruf kecil dan angka!";
             this.style.borderColor = 'red';
         } else {
             warning.style.display = 'none';
@@ -291,7 +291,7 @@
         const isValidLength = value.length >= 11 && value.length <= 14;
         if (!isValidLength && value.length > 0) {
             warning.style.display = 'block';
-            warning.textContent = "⚠️ Nomor WhatsApp harus 11-14 digit";
+            warning.textContent = "Nomor WhatsApp harus 11-14 digit";
             this.style.borderColor = 'red';
         } else {
             warning.style.display = 'none';
