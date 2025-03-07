@@ -126,7 +126,7 @@
 
             <label for="foto">Foto:</label>
             <input type="file" id="foto" name="foto" accept="image/jpeg" required>
-            <div class="keterangan">Format file foto harus ber-format JPG, maksimal ukuran file 500kb, Min 50kb</div>
+            <div class="keterangan">Format file foto harus ber-format JPG, aksimal ukuran file 500kb, Min 50kb</div>
             <div id="message" class="error"></div>
 
             <div class="preview-container">
@@ -156,7 +156,7 @@
 
             const fileSize = file.size;
             if (fileSize < 50 * 1024 || fileSize > 500 * 1024) {
-                message.textContent = "Ukuran file harus antara 50KB - 500KB";
+                message.textContent = "Ukuran file harus minimal 50KB dan maksimal 500KB";
                 return;
             }
 
@@ -189,16 +189,16 @@
 
                         if (confidence > 80) {
                             message.style.color = 'green';
-                            message.textContent = "Wajah terdeteksi dengan baik!";
+                            message.textContent = "Wajah terdeteksi";
                             submitBtn.disabled = false;
                         } else {
                             message.style.color = 'red';
-                            message.textContent = "Kualitas foto wajah kurang baik, silakan gunakan foto lain";
+                            message.textContent = "Kualitas foto kurang baik, gunakan foto lain";
                             submitBtn.disabled = true;
                         }
                     });
                 } else {
-                    message.textContent = "Muka tidak terdeteksi, silahkan pakai gambar JPG lainnya!";
+                    message.textContent = "Wajah tidak terdeteksi, gunakan foto lain";
                     submitBtn.disabled = true;
                 }
             };
@@ -225,7 +225,6 @@
         value = value.toLowerCase().split(' ').map(word => {
             return word.charAt(0).toUpperCase() + word.slice(1);
         }).join(' ');
-        
         e.target.value = value;
     });
 
@@ -236,13 +235,12 @@
         
         if (value.length < 3 || value.length > 20 || e.target.value !== value) {
             warning.style.display = 'block';
-            warning.textContent = "Username harus 3-20 karakter, hanya huruf kecil dan angka!";
+            warning.textContent = "Username harus 3-20 karakter dan hanya menggunakan huruf kecil dan angka saja.";
             this.style.borderColor = 'red';
         } else {
             warning.style.display = 'none';
             this.style.borderColor = '#ccc';
         }
-        
         e.target.value = value;
     });
 
